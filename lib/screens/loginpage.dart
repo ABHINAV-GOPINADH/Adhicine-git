@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:adhicine/screens/homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -13,7 +14,7 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isObscured = true;
 
@@ -38,9 +39,9 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(height: 20),
                 // Username TextField
                 TextField(
-                  controller: _usernameController,
+                  controller: _emailController,
                   decoration: InputDecoration(
-                    labelText: 'Username',
+                    labelText: 'email address',
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -79,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                 // Sign In Button
                 ElevatedButton(
                   onPressed: () async {
-                    // await _signIn();
+                    await _signIn();
                   },
                   child: Text('Sign In'),
                   style: ElevatedButton.styleFrom(
@@ -132,9 +133,55 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
+
+  Future<void> _signIn() async {
+    final String email = _emailController.text.trim();
+    final String password = _passwordController.text.trim();
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      User? user = userCredential.user;
+      if (user != null) {
+        await user.sendEmailVerification();
+
+        await FirebaseFirestore.instance.collection('user').doc(user.uid).set({
+          'email': email,
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Sign up successful ! Please verify your email.')),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => HomePage()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String message;
+      switch (e.code) {
+        case 'email-already-in-use':
+          message = 'The email address is already in use';
+          break;
+        case 'invalid-email':
+          message = 'The email address is not valid';
+          break;
+        case 'operation-not-allowed':
+          message = 'Operation not allowed';
+          break;
+        case 'weak-password':
+          message = 'The password is too weak';
+          break;
+        default:
+          message = 'An unknown error occurred';
+      }
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(message)));
+    }
+  }
 }
-
-
-
-
-
