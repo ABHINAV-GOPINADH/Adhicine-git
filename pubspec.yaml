@@ -38,6 +38,7 @@ dependencies:
   firebase_auth: ^5.0.0
   http: ^1.2.1
   cloud_firestore: ^5.0.0
+  flutter_material_pickers: ^3.7.0
 
 dev_dependencies:
   flutter_test:
