@@ -1,5 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
+import '../services/Auth.dart';
 import '../utils/fontstyles.dart';
 
 class HomePage extends StatefulWidget {
@@ -10,19 +11,26 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final AuthService _auth = AuthService();
+  late Future<DocumentSnapshot<Map<String, dynamic>>> _userData;
+
   final List<String> days = [
-    'Mon',
-    'Tue',
-    'Wed',
-    'Thu',
-    'Fri',
-    'Sat',
-    'Sun',
+    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun',
   ];
 
   final List<int> dates = [
     31, 1, 2, 3, 4, 5, 6 // Assuming today is June 6th, adjust the dates accordingly
   ];
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> _fetchUserData() async {
+    return _auth.getUserData();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _userData = _fetchUserData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,15 +38,35 @@ class _HomePageState extends State<HomePage> {
       body: Column(
         children: <Widget>[
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 5,vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 10),
             child: Container(
-              child:  Column(
+              child: Column(
                 children: [
                   SizedBox(height: 30,),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text("Hi Harry",style: Styles.headline1),
+                      FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+                        future: _userData,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return CircularProgressIndicator();
+                          } else if (snapshot.hasError) {
+                            return Text('Error: ${snapshot.error}');
+                          } else if (snapshot.hasData) {
+                            var userData = snapshot.data!.data();
+                            print('hello');
+                            print(userData);
+                            if (userData != null) {
+                              return Text("Hi ${userData['fname']}", style: Styles.headline1);
+                            } else {
+                              return Text('User data is null', style: Styles.headline1);
+                            }
+                          } else {
+                            return Text('No user data found', style: Styles.headline1);
+                          }
+                        },
+                      ),
                       Row(
                         children: [
                           Icon(
@@ -59,7 +87,6 @@ class _HomePageState extends State<HomePage> {
                     alignment: Alignment.centerLeft,
                     child: Text("5 medicine left"),
                   )
-
                 ],
               ),
             ),
@@ -103,11 +130,10 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           Expanded(
-            child: Center(
-              child: Text(
-                'Main Content Here',
-                style: TextStyle(fontSize: 24),
-              ),
+            child: Column(
+              children: [
+                Text("Morning 8:00"),
+              ],
             ),
           ),
         ],

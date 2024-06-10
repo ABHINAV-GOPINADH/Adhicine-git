@@ -24,7 +24,7 @@ class _DetailsPageState extends State<DetailsPage> {
   String? _selectedSex;
   final List<int> _ages = List<int>.generate(100, (index) => index + 1);
 
-  final Auth _auth = Auth();
+  final AuthService _auth = AuthService();
 
   @override
   Widget build(BuildContext context) {

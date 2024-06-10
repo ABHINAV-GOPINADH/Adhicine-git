@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isObscured = true;
 
-  final Auth _auth = Auth();
+  final AuthService _auth = AuthService();
 
   @override
   Widget build(BuildContext context) {
