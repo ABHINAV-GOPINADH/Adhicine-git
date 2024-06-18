@@ -83,7 +83,7 @@ class AuthService {
   Future<DocumentSnapshot<Map<String, dynamic>>> getUserData() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      DocumentSnapshot<Map<String, dynamic>> doc = await FirebaseFirestore.instance.collection('user').doc(user.uid).get();
       return doc;
     } else {
       throw Exception("User not logged in");
